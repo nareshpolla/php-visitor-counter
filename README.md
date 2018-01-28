@@ -264,4 +264,37 @@ server {
 - ansible-playbook php.yml --ask-sudo-pass
 
 
+AWS horizontal scaling using CloudFormation
 
+Here you configure an auto scaling group with a minimum size of 2 and maximum size of 4, with a defined set of metrics and at what schedule (or granularity) the metrics will be collected.
+
+my_group: 
+ Type: “AWS::AutoScaling::AutoScalingGroup”
+ Properties: 
+   AvailabilityZones: 
+     Fn::GetAZs: “”
+   LaunchConfigurationName: 
+     Ref: “LaunchConfig”
+   MinSize: “2”
+   MaxSize: “4”
+   LoadBalancerNames: 
+     – Ref: “ElasticLoadBalancer”
+   MetricsCollection: 
+     – 
+       Granularity: “1Minute”
+       Metrics: 
+         – “GroupMinSize”
+         – “GroupMaxSize”
+
+Here is a simple construct for defining an instance.
+
+SimpleConfig:
+ Type: AWS::AutoScaling::LaunchConfiguration
+ Properties:
+   ImageId: my_ami
+   SecurityGroups:
+   – Ref: mySecurityGroup
+   – myExistingEC2SecurityGroup
+   InstanceType: m1.small
+
+And here is a construct to define the metrics and thresholds for how the scaling group will grow.
